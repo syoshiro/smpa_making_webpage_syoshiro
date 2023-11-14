@@ -1,6 +1,6 @@
 ---
 title: "Making a searchable database table"
-author: "Aaron Kessler"
+author: "Sarina Oshiro"
 format:
   html:
     self-contained: true
