@@ -1,0 +1,371 @@
+---
+title: "Making a searchable database table"
+author: "Aaron Kessler"
+format:
+  html:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+
+# The material here comes from the excellent R Plotly walkthrough, with my annotations and slight changes at certain points:
+# https://medium.com/swlh/step-by-step-data-visualization-guideline-with-plotly-in-r-fbd212640de2  
+# As well as selected examples from here:
+# https://blog.methodsconsultants.com/posts/plotly-for-r-multi-layer-plots/
+
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(plotly)
+
+
+```
+
+For all of this tutorial we'll use built-in R datasets like "iris" and "diamonds," and also gin up toy datasets on the fly as we go.
+
+
+```{r, echo=FALSE}
+
+iris <- iris %>% as_tibble()
+
+head(iris)
+
+```
+
+Basic scatterplot
+```{r, echo=FALSE}
+
+fig <- plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length)
+
+fig 
+
+```
+
+Customising sizes
+
+```{r, echo=FALSE}
+
+fig <- plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length,
+               marker = list(size = 10,
+                             color = 'blue',
+                             line = list(color = 'green',
+                                         width = 2)))
+
+fig <- fig %>% layout(title = 'Customized Scatter Plot')
+
+fig
+
+```
+``
+
+Single line chart
+```{r, echo=FALSE}
+
+# Data Preparation
+day <- c(1:30)
+number_of_order <- rnorm(30, mean = 3)
+df <- data.frame(day, number_of_order)
+
+# Data Visualization
+fig <- plot_ly(df, x = ~day, y = ~number_of_order, type = 'scatter', mode = 'lines')
+
+fig %>%  
+  layout(title = 'Number of Daily Orders in a Month', 
+           yaxis = list(title = 'Number of Order'), 
+          xaxis = list(title = '1 Month') )
+                       
+
+```
+
+Multiple line charts and styles
+```{r, echo=FALSE}
+#Data Preparation:
+
+month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
+         'August', 'September', 'October', 'November', 'December')
+Vegetable <- c(32.5, 37.6, 49.9, 53.0, 69.1, 75.4, 76.5, 76.6, 70.7, 60.6, 45.1, 29.3)
+Beverage <- c(13.8, 22.3, 32.5, 37.2, 49.9, 56.1, 57.7, 58.3, 51.2, 42.8, 31.6, 15.9)
+Snack <- c(36.5, 26.6, 43.6, 52.3, 71.5, 81.4, 80.5, 82.2, 76.0, 67.3, 46.1, 35.0)
+df <- data.frame(month, Vegetable, Beverage, Snack)
+df$month <- factor(df$month, levels = df[["month"]])
+
+#Data Visualization:
+
+fig <- plot_ly(data=df, x = ~month, y = ~Vegetable, name = 'Vegetable', 
+               type = 'scatter', mode = 'lines',
+               line = list(color = 'blue', width = 4))
+               
+fig <- fig %>% add_trace(y = ~Beverage, name = 'Beverage', 
+                         line = list(color = 'red', width = 4, dash = 'dot'))
+                         
+fig <- fig %>% add_trace(y = ~Snack, name = 'Snack', 
+                         line = list(color = 'green', width = 4, dash = 'dash'))
+                         
+fig <- fig %>% layout(title = "Average Sales by Parts of Supermarkets",
+         xaxis = list(title = "Months"),
+         yaxis = list (title = "Average Sales"))
+         
+fig
+
+```
+
+Basic Bar Chart
+
+```{r, echo=FALSE}
+
+fig <- plot_ly(
+  x = c("Beverage", "Vegetable", "Dairy"),
+  y = c(20, 14, 23),
+  type = "bar",
+  color = "orange"
+)
+fig <- fig %>% layout(title = "Sales by Parts of Supermarket",
+         xaxis = list(title = "Parts"),
+         yaxis = list (title = "Number of Sold Product"))
+fig
+
+
+```
+
+Grouped Bar Chart
+```{r, echo=FALSE}
+
+# Data Preparation
+Parts <- c("Beverage", "Vegetable", "Dairy")
+Sales_2019 <- c(20, 14, 23)
+Sales_2020 <- c(12, 18, 29)
+df <- data.frame(Parts, Sales_2019, Sales_2020)
+
+# Data Visualization
+fig <- plot_ly(data= df, x = ~Parts, y = ~Sales_2019, type = 'bar', name = '2019 Sales')
+
+fig <- fig %>% add_trace(y = ~Sales_2020, name = '2020 Sales')
+
+fig <- fig %>% layout(
+               title = "Sales by Parts of Supermarket 2019 vs 2020",
+               xaxis = list(title = "Parts"),
+               yaxis = list(title = 'Number of Sales'), 
+               barmode = 'group')
+      
+fig
+
+
+```
+
+
+Stacked Bar Chart
+```{r, echo=FALSE}
+
+# Data Preparation
+Parts <- c("Beverage", "Vegetable", "Dairy")
+Sales_2019 <- c(20, 14, 23)
+Sales_2020 <- c(12, 18, 29)
+df <- data.frame(Parts, Sales_2019, Sales_2020)
+
+# Data Visualization
+fig <- plot_ly(data= df, x = ~Parts, y = ~Sales_2019, type = 'bar', name = '2019 Sales')
+
+fig <- fig %>% add_trace(y = ~Sales_2020, name = '2020 Sales')
+
+fig <- fig %>% layout(
+               title = "Sales by Parts of Supermarket 2019 vs 2020",
+               xaxis = list(title = "Parts"),
+               yaxis = list(title = 'Number of Sales'), 
+               barmode = 'stack') ### <--- this is the ONLY change from one above
+      
+fig
+
+
+```
+
+Customizing an individual bar's color
+```{r, echo=FALSE}
+
+fig <- plot_ly(
+  x = c("Beverage", "Vegetable", "Dairy"),
+  y = c(20, 14, 23),
+  type = "bar",
+  marker= list(color=c('rgba(204,204,204,1)', 
+                        'rgba(204,204,204,1)',
+                                'rgba(222,45,38,0.8)')))
+fig <- fig %>% layout(title = "Sales by Parts of Supermarket",
+         xaxis = list(title = "Parts"),
+         yaxis = list (title = "Number of Sold Product"))
+fig
+
+```
+
+Mapping by color variable
+```{r, echo=FALSE}
+
+#Data Preparation
+new_df <- ggplot2::diamonds
+new_df_counted <- new_df %>% count(cut, clarity)
+
+#Data Visualization
+fig <- new_df_counted %>% plot_ly(x = ~cut, y = ~n, color = ~clarity)
+
+fig <- fig %>% layout(title = "Number of Clarity by Types and Cut")
+
+fig
+
+```
+
+Donut Chart
+```{r, echo=FALSE}
+#Data Preparation
+Parts <- c('Beverage','Vegetable','Dairy','Fish')
+Sales <- c(4500, 2500, 1053, 500)
+df <- data.frame(Parts, Sales)
+
+#Data Visualisation
+fig <- df %>% plot_ly(labels = ~Parts, values = ~Sales)
+
+fig <- fig %>% add_pie(hole = 0.6)
+
+fig <- fig %>% layout(
+                  title = "Number of Sales by Parts of Supermarket in a Day",  showlegend = F,
+                  xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                  yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+
+```
+
+###
+### Multilayer example  
+
+Now we'll look at something more complicated.  
+  
+Using the **txhousing** dataset from ggplot2, which tracks housing prices for cities in Texas over time. 
+
+```{r, echo=FALSE}
+head(txhousing)
+
+```
+
+Let’s start by plotting the time trend for each city.  
+Watch here how we work plotly into a regular type of tidyverse/dplyr pipeline.  
+  
+*Key point:* the object created here is a plotly chart object. This will become important later on below to keep in mind.
+
+```{r, echo=FALSE}
+
+all_cities_plotlychart <- txhousing %>%
+  group_by(city) %>%
+  plot_ly(x = ~date, y = ~median) %>%
+  add_lines(
+    name = "Texan Cities", 
+    line = list(width = 1.33), 
+    alpha = 0.2, 
+    hoverinfo = "none"
+  ) %>%
+  ungroup()
+
+all_cities_plotlychart
+
+```
+
+Now let's add a line with the average of each cities median price. We’ll use summarise() to average the housing values for each month. After the data is summarized, we’ll add a new layer based on the updated data.
+
+```{r, echo=FALSE}
+
+summarized_data <- all_cities_plotlychart %>%
+  group_by(date) %>%
+  summarise(median = mean(median, na.rm = TRUE)) %>%
+  ungroup()
+
+summarized_data %>%
+  plotly_data()
+
+```
+
+Make the chart to add a highlighted line for median price.
+```{r, echo=FALSE}
+
+summarized_data %>%
+  add_lines(name = "Average Median Price")
+
+
+```
+
+The mutability of the plotly object allowed us to use all of the data in the first layer, and then add a second layer on a summarized version of the data.  
+  
+Let’s say that we also wanted to add lines for the major Texan cities to see where their housing prices fell compared to all cities. Let’s look at San Antonio and Austin. 
+  
+First we'll do San Antonio.
+```{r, echo=FALSE}
+
+all_cities_plotlychart %>%
+  filter(city == "San Antonio") %>%
+  plotly_data()
+
+```
+
+
+```{r, echo=FALSE}
+
+all_cities_plotlychart %>%
+  filter(city == "San Antonio") %>%
+  add_lines(name = "San Antonio")
+
+
+```
+
+
+```{r, echo=FALSE}
+
+#again this time with a different city
+all_cities_plotlychart %>%
+  filter(city == "Dallas") %>%
+  add_lines(name = "Dallas")
+
+
+```
+
+What if we want multiple cities to be highlighted? We can create a function to do it.
+```{r, echo=FALSE}
+
+city_layer <- function(plot_obj, city_name) {
+  plot_obj %>%
+    filter(city == city_name) %>%
+    add_lines(name = city_name)
+}
+
+all_cities_plotlychart %>%
+  add_fun(city_layer, city_name = "San Antonio") %>%
+  add_fun(city_layer, city_name = "Austin") %>%
+  add_fun(city_layer, city_name = "Houston")
+
+
+```
+
+
+```{r, echo=FALSE}
+
+
+
+
+```
+
+
+```{r, echo=FALSE}
+
+
+
+
+```
+
+
+```{r, echo=FALSE}
+
+
+
+
+```
+
+
+```{r, echo=FALSE}
+
+
+
+
+```

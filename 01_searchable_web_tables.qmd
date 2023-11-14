@@ -1,0 +1,129 @@
+---
+title: "Making a searchable database table"
+author: "Aaron Kessler"
+format:
+  html:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(DT)
+
+#### PRESIDENTIAL CANDIDATE TRIPS ####
+   
+# Load in data of prez candidate campaign trips between midterms and end of Jan
+events <- readRDS("events_saved.rds")
+
+
+```
+
+## Using DT to make a searchable table
+
+```{r}
+#### MAKING A SEARCHABLE TABLE FOR THE WEB ####
+
+# First -- let's talk about: what is the Internet? What IS a web page?
+# An oldie but a goodie from 2009: https://www.youtube.com/watch?v=7_LPdttKXPc
+# Bottom line, it's just a bunch of computers connected to each other. 
+# A website? It's just files on someone else's computer (aka server)
+```
+
+
+```{r}
+#We can use the "DT" package to easily make a sortable, filterable, searchable data table
+#Just this little bit of code does a whole lot - check it out:
+
+DT::datatable(events)
+
+```
+
+
+```{r}
+#We can already sort, but what if we want to allow the table to be FILTERED too?
+#It's easy, we just add:
+DT::datatable(events, 
+              rownames = FALSE, 
+              filter = "top"# <--- NEW STUFF HERE
+              )
+```
+
+
+```{r}
+#Now hmm, what's up with the filters on the text columns? Why aren't they working?
+#It's because of a quirk in DT tables where filters will only work on text that is converted to a factor
+#So let's do that
+events <- events %>% 
+  mutate(
+    state = as_factor(state),
+    event_type = as.factor(event_type)
+  )
+```
+
+
+```{r}
+#Now let's try the DT table code again and see if it worked
+DT::datatable(events, 
+              rownames = FALSE, 
+              filter = "top")
+```
+
+
+```{r}
+#Now, for the coup de gr?ce
+#let's add some buttons at the top of the page to let people copy, download, etc
+#we do that using a DT "extenstion" called, you guessed it, Buttons
+# https://rstudio.github.io/DT/extensions.html
+
+DT::datatable(events, 
+              rownames = FALSE, 
+              filter = "top", 
+              extensions = 'Buttons', 
+              options = list(   # <--- NEW STUFF STARTS HERE
+                dom = 'Bfrtip',
+                buttons = c('copy', 'csv', "excel")
+              )) %>%
+  DT::formatStyle('cand_lastname',  color = 'red', fontWeight = 'bold')
+```
+
+
+```{r}
+## saving the result
+
+# first we just need to assign our table to a variable...
+
+mytable <- DT::datatable(events, 
+                         rownames = FALSE, 
+                         filter = "top", 
+                         extensions = 'Buttons', 
+                         options = list(
+                           dom = 'Bfrtip',
+                           buttons = c('copy', 'csv', "excel")
+                         )) %>%
+  DT::formatStyle('cand_lastname',  color = 'red', fontWeight = 'bold') 
+
+# ... then just run this simple bit of code to export to html
+DT::saveWidget(mytable, "mytable.html")
+
+
+# We've now created a working web page that can be put anywhere on the internet we choose
+# Yay!
+
+# If we stay within the world of quarto though we don't need to export it, we can just display it
+# within the quarto page of course
+```
+
+
+What if we have a little table and want a super minimal table with everything stripped out
+```{r}
+
+events %>% 
+  head(5) %>% 
+  DT::datatable(rownames = FALSE, 
+                options = list(searching = FALSE, paging = FALSE, dom = "tip")) 
+
+
+```
+
