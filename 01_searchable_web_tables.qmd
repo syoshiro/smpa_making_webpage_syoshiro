@@ -46,7 +46,7 @@ DT::datatable(events)
 #It's easy, we just add:
 DT::datatable(events, 
               rownames = FALSE, 
-              filter = "top"# <--- NEW STUFF HERE
+              filter = "top" # <--- NEW STUFF HERE
               )
 ```
 
@@ -85,14 +85,14 @@ DT::datatable(events,
                 dom = 'Bfrtip',
                 buttons = c('copy', 'csv', "excel")
               )) %>%
-  DT::formatStyle('cand_lastname',  color = 'red', fontWeight = 'bold')
+  DT::formatStyle('cand_lastname',  color = 'green', fontWeight = 'bold')
 ```
 
 
 ```{r}
 ## saving the result
 
-# first we just need to assign our table to a variable...
+# first we just need to assign our table to an object...
 
 mytable <- DT::datatable(events, 
                          rownames = FALSE, 
@@ -102,10 +102,10 @@ mytable <- DT::datatable(events,
                            dom = 'Bfrtip',
                            buttons = c('copy', 'csv', "excel")
                          )) %>%
-  DT::formatStyle('cand_lastname',  color = 'red', fontWeight = 'bold') 
+  DT::formatStyle('cand_lastname',  color = 'green', fontWeight = 'bold') 
 
 # ... then just run this simple bit of code to export to html
-DT::saveWidget(mytable, "mytable.html")
+DT::saveWidget(mytable, "candidatetracker.html")
 
 
 # We've now created a working web page that can be put anywhere on the internet we choose
